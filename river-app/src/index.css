@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens, sampled directly from the UI export with tools/palette.py.
+   Names are semantic rather than literal so a rebrand is a one-file change.
+--------------------------------------------------------------------------- */
+@theme {
+  --font-sans:
+    "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  /* surfaces */
+  --color-cream: #faf8f5; /* page background */
+  --color-surface: #fffdf9; /* cards, bubbles */
+  --color-sunken: #f1ede6; /* search fields, inactive chips */
+  --color-hairline: #e9e3da; /* card borders, list dividers */
+
+  /* type */
+  --color-ink: #141219; /* near-black: headlines, pills, dark bubbles */
+  --color-muted: #8e8a85; /* secondary copy, timestamps */
+  --color-faint: #b5afa7; /* placeholders, inactive tab icons */
+
+  /* accents */
+  --color-brand: #e1306c; /* primary pink */
+  --color-zest: #dff34d; /* lime */
+  --color-info: #0095f6; /* blue */
+  --color-online: #34c759; /* presence green */
+
+  /* the live/reply ring gradient, orange -> pink -> violet, top to bottom */
+  --ring-story: linear-gradient(180deg, #a833c4 0%, #e1306c 52%, #f77737 100%);
+
+  --radius-card: 1.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* horizontal chip/story rails scroll without a visible bar */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility ring-story {
+  background: var(--ring-story);
+}
