@@ -18,7 +18,7 @@ export function AppHeader({
   trailing?: React.ReactNode;
 }) {
   return (
-    <header className="flex items-center gap-3 px-4 pt-[18px] pb-3">
+    <header className="flex items-center gap-3 px-4 pt-[21px] pb-3">
       <LogoMark />
       <Title>{title}</Title>
       <BetaChip />

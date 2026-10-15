@@ -32,7 +32,7 @@ export function Chats({
         <SearchField placeholder="Search chats, channels, people" />
       </div>
 
-      <Rail className="px-4 pt-[19px] pb-1">
+      <Rail className="px-4 pt-[17px] pb-1">
         {chatFilters.map((f) => (
           <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>
             {f}
@@ -40,11 +40,11 @@ export function Chats({
         ))}
       </Rail>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-[14px]">
         <SectionHeading>Channels you follow</SectionHeading>
       </div>
 
-      <div className="flex flex-col gap-2 px-4 pt-3">
+      <div className="flex flex-col gap-2 px-4 pt-[7px]">
         {channels.map((channel) => (
           <div
             key={channel.id}
@@ -55,15 +55,17 @@ export function Chats({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-[6px]">
-                <span className="truncate text-[14px] font-extrabold tracking-[-0.01em]">
+                <span className="truncate text-[14px] leading-[19px] font-extrabold tracking-[-0.01em]">
                   {channel.name}
                 </span>
                 <MegaphoneIcon size={13} className="shrink-0 text-ink/45" />
               </div>
-              <p className="truncate text-[13px] font-medium text-muted">
+              <p className="truncate text-[13px] leading-[18px] font-medium text-muted">
                 {channel.preview}
               </p>
-              <p className="text-[12px] font-semibold text-ink/70">{channel.members}</p>
+              <p className="text-[12px] leading-[17px] font-semibold text-ink/70">
+                {channel.members}
+              </p>
             </div>
             <PillButton size="sm">Join</PillButton>
           </div>
@@ -74,13 +76,13 @@ export function Chats({
         <SectionHeading>Messages</SectionHeading>
       </div>
 
-      <div className="flex flex-col px-4 pt-1">
+      <div className="flex flex-col px-4">
         {chatRows.map((row) => (
           <button
             key={row.id}
             type="button"
             onClick={onOpenConversation}
-            className="flex items-center gap-3 py-3 text-left transition active:opacity-70"
+            className="flex items-center gap-3 py-[10px] text-left transition active:opacity-70"
           >
             <Avatar
               src={row.person.avatar}

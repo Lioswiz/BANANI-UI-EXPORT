@@ -5,8 +5,10 @@ import { profile, profilePost } from "../lib/data";
 
 /**
  * Cover and avatar geometry is taken straight from the export: the cover is a
- * full-bleed 375x198.3pt block, and the avatar ring sits 168.3pt down at 74pt
+ * full-bleed 375x211pt block, and the avatar ring sits 168.3pt down at 74pt
  * across with a 5.5pt gradient ring, so it straddles the cover's bottom edge.
+ * The ring overflows the cover block, so the details below clear it with a
+ * 44pt top pad rather than flowing straight off the image.
  */
 export function Profile({ onBack }: { onBack: () => void }) {
   return (
@@ -15,7 +17,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
         <img
           src="/img/profile-cover.jpg"
           alt=""
-          className="h-[198.3px] w-full object-cover"
+          className="h-[211px] w-full object-cover"
         />
 
         <button
@@ -43,7 +45,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      <div className="px-4 pt-[20px]">
+      <div className="px-4 pt-[44px]">
         <div className="flex items-center gap-3">
           <h1 className="flex items-center gap-[6px] text-[20px] leading-none font-extrabold tracking-[-0.02em]">
             {profile.person.name}
@@ -59,8 +61,8 @@ export function Profile({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        <p className="mt-1 text-[14px] font-medium text-muted">{profile.meta}</p>
-        <p className="mt-2 text-[15px] leading-[1.4] font-medium text-ink">
+        <p className="text-[14px] leading-[17px] font-medium text-muted">{profile.meta}</p>
+        <p className="mt-[3px] text-[15px] leading-[1.4] font-medium text-ink">
           {profile.bio}
         </p>
 
@@ -74,7 +76,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      <div className="flex gap-2 px-4 pt-4">
+      <div className="flex gap-2 px-4 pt-[11px]">
         {profile.tabs.map((tab, i) => (
           <button
             key={tab}

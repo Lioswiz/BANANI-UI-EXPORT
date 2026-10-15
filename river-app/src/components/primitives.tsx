@@ -234,7 +234,7 @@ export function Tag({ children }: { children: ReactNode }) {
 /** Section heading inside a screen, e.g. "Channels you follow". */
 export function SectionHeading({ children }: { children: ReactNode }) {
   return (
-    <h2 className="text-[17px] leading-none font-extrabold tracking-[-0.01em]">
+    <h2 className="text-[15px] leading-none font-extrabold tracking-[-0.01em]">
       {children}
     </h2>
   );
