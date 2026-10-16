@@ -215,3 +215,29 @@ export const ChevronRightIcon = (p: IconProps) => (
     <path d="m9.5 5.5 6.5 6.5-6.5 6.5" />
   </Svg>
 );
+
+/** An arrow leaving a door — the profile's sign-out action. */
+export const LogoutIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M13.6 4.6h4.3a1.4 1.4 0 0 1 1.4 1.4v12a1.4 1.4 0 0 1-1.4 1.4h-4.3" />
+    <path d="m9.4 8.4-4.2 3.6 4.2 3.6" />
+    <path d="M5.2 12h9.2" />
+  </Svg>
+);
+
+/** Pencil — "edit profile" in the settings menu. */
+export const PencilIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M16.2 4.6a2.1 2.1 0 0 1 3 3L8.4 18.4l-4 1 1-4Z" />
+    <path d="m14.4 6.4 3 3" />
+  </Svg>
+);
+
+/** Arrow out of a tray — "share profile" in the settings menu. */
+export const ShareIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3.6v11" />
+    <path d="m8.2 7.4 3.8-3.8 3.8 3.8" />
+    <path d="M5.5 13.4v5.1a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-5.1" />
+  </Svg>
+);

@@ -68,12 +68,12 @@ export function HomeFeed({
         ))}
       </div>
 
-      {/* The export's placeholder paragraph, made editable at the same metrics:
-          the input inherits the <p>'s 14px/1.4 semibold white so an empty
-          composer is pixel-identical to the mockup. */}
+      {/* The export's placeholder paragraph, made editable at the same metrics.
+          The field itself is the white bar: no placeholder, so an empty
+          composer shows the bolt, the caret and nothing else. */}
       <form
         onSubmit={publish}
-        className="mx-4 mb-[11px] flex h-[66px] items-center gap-3 rounded-[20px] bg-ink px-3"
+        className="mx-4 mb-[11px] flex h-[66px] items-center gap-3 rounded-[20px] border border-hairline bg-surface px-3"
       >
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-zest text-ink">
           <BoltIcon size={17} />
@@ -82,9 +82,8 @@ export function HomeFeed({
           ref={composer}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Share a Chirp — text, photo or 30s Loop"
           aria-label="Share a Chirp"
-          className="min-w-0 flex-1 bg-transparent text-[14px] leading-[1.4] font-semibold text-white caret-zest outline-none placeholder:text-white"
+          className="min-w-0 flex-1 bg-transparent text-[14px] leading-[1.4] font-semibold text-ink caret-brand outline-none"
         />
         <PillButton
           size="md"

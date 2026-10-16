@@ -4,8 +4,9 @@
  *
  * Deliberately not a context: `useSyncExternalStore` over a module-level object
  * is a dozen lines, needs no provider in the tree, and can be read from any
- * component without prop drilling. State is in memory only — a reload resets
- * the app to its exported appearance.
+ * component without prop drilling. Screen content is in memory only — a reload
+ * resets the app to its exported appearance — with one exception: the signed-in
+ * account, which has to outlive a reload or "log out" would mean nothing.
  */
 import { useSyncExternalStore } from "react";
 
@@ -18,7 +19,12 @@ import {
 
 export type Toast = { id: number; text: string };
 
+/** A local account. There is no backend — see `signIn` / `signUp` below. */
+export type Account = { name: string; handle: string; email: string };
+
 export type AppState = {
+  /** null while signed out, which is when the shell gives way to the gate */
+  account: Account | null;
   /** post id -> liked */
   liked: Record<string, boolean>;
   reposted: Record<string, boolean>;
@@ -41,20 +47,91 @@ export type AppState = {
   toast: Toast | null;
 };
 
-let state: AppState = {
-  liked: {},
-  reposted: {},
-  replies: {},
-  joined: {},
-  following: {},
-  feed: [],
-  name: profileSeed.person.name,
-  meta: profileSeed.meta,
-  bio: profileSeed.bio,
-  messages: conversation.messages,
-  composeToken: 0,
-  toast: null,
-};
+/* ------------------------------------------------------------------ auth */
+
+const SESSION_KEY = "river.session";
+const ACCOUNT_KEY = "river.account";
+
+/** Storage can throw outright in a private window, hence the guards. */
+function readStored(key: string): Account | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const a = JSON.parse(raw) as Partial<Account>;
+    return a?.email && a.name && a.handle ? (a as Account) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key: string, account: Account | null) {
+  try {
+    if (account) localStorage.setItem(key, JSON.stringify(account));
+    else localStorage.removeItem(key);
+  } catch {
+    // no storage: nothing survives the tab
+  }
+}
+
+/** The live session. Gone the moment you sign out. */
+const readSession = () => readStored(SESSION_KEY);
+const writeSession = (a: Account | null) => writeStored(SESSION_KEY, a);
+
+/**
+ * The account this device knows, kept separately from the session: signing out
+ * drops the session but not the name and handle, so signing back in as the same
+ * address returns you to the same profile rather than a stranger derived from
+ * the email.
+ */
+const readAccount = () => readStored(ACCOUNT_KEY);
+const writeAccount = (a: Account | null) => writeStored(ACCOUNT_KEY, a);
+
+export function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+/**
+ * The export's profile copy is Sofia's, so a signed-in account takes over just
+ * the parts of it that are identity — the name, and the handle at the front of
+ * the meta line. The bio, stats and channel stay as the export drew them.
+ */
+function withHandle(meta: string, handle: string) {
+  const rest = meta.indexOf(" · ");
+  return `@${handle}${rest === -1 ? "" : meta.slice(rest)}`;
+}
+
+/** "sofia.reyes@mail.com" -> "Sofia Reyes", so a sign-in still has a name. */
+function nameFromEmail(email: string) {
+  const words = email
+    .split("@")[0]
+    .split(/[._\-+]+/)
+    .filter(Boolean);
+  const name = words
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return name || "River user";
+}
+
+/** The whole store, seeded for whoever is signed in. */
+function seedState(account: Account | null): AppState {
+  return {
+    account,
+    liked: {},
+    reposted: {},
+    replies: {},
+    joined: {},
+    following: {},
+    feed: [],
+    name: account?.name ?? profileSeed.person.name,
+    meta: account ? withHandle(profileSeed.meta, account.handle) : profileSeed.meta,
+    bio: profileSeed.bio,
+    messages: conversation.messages,
+    composeToken: 0,
+    toast: null,
+  };
+}
+
+let state: AppState = seedState(readSession());
 
 const listeners = new Set<() => void>();
 
@@ -124,6 +201,53 @@ export function bumpStat(value: string, delta: number): string {
 /* -------------------------------------------------------------- actions */
 
 export const actions = {
+  /**
+   * Sign in. Any well-formed credentials are accepted — there is nothing to
+   * check them against — and the account is remembered on this device so the
+   * same email keeps the same name next time. Returns an error to show, or null.
+   */
+  signIn(email: string, password: string): string | null {
+    const mail = email.trim().toLowerCase();
+    if (!isEmail(mail)) return "That doesn't look like an email address.";
+    if (password.length < 6) return "Passwords are at least 6 characters.";
+
+    const known = readAccount();
+    const account: Account =
+      known?.email.toLowerCase() === mail
+        ? known
+        : { name: nameFromEmail(mail), handle: mail.split("@")[0].slice(0, 20), email: mail };
+
+    writeAccount(account);
+    writeSession(account);
+    set(seedState(account));
+    return null;
+  },
+
+  /** Create an account, then sign straight into it. */
+  signUp(fields: { name: string; handle: string; email: string; password: string }) {
+    const name = fields.name.trim();
+    const handle = fields.handle.trim().replace(/^@+/, "").toLowerCase();
+    const mail = fields.email.trim().toLowerCase();
+
+    if (name.length < 2) return "Add a name people will recognise.";
+    if (!/^[a-z0-9._]{2,20}$/.test(handle))
+      return "Handles are 2–20 letters, numbers, dots or underscores.";
+    if (!isEmail(mail)) return "That doesn't look like an email address.";
+    if (fields.password.length < 6) return "Passwords are at least 6 characters.";
+
+    const account: Account = { name, handle, email: mail };
+    writeAccount(account);
+    writeSession(account);
+    set(seedState(account));
+    return null;
+  },
+
+  signOut() {
+    writeSession(null);
+    // signing out is a change of person: nothing the last one did carries over
+    set(seedState(null));
+  },
+
   toggleLike(id: string) {
     set({ liked: { ...state.liked, [id]: !state.liked[id] } });
   },
@@ -156,7 +280,7 @@ export const actions = {
     if (!text) return;
     const post: Post = {
       id: `own-${Date.now()}`,
-      author: profileSeed.person,
+      author: { ...profileSeed.person, name: state.name },
       time: "now",
       body: text,
       stats: { comments: "0", reposts: "0", likes: "0" },

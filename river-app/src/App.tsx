@@ -7,8 +7,9 @@ import { TabBar, type TabKey } from "./components/TabBar";
 import { Toast } from "./components/Toast";
 import { WaveFilter } from "./components/WaveFilter";
 import { activity, type Story } from "./lib/data";
-import { actions } from "./lib/store";
+import { actions, useApp } from "./lib/store";
 import { Activity } from "./screens/Activity";
+import { Auth } from "./screens/Auth";
 import { Chats } from "./screens/Chats";
 import { Conversation } from "./screens/Conversation";
 import { Explore } from "./screens/Explore";
@@ -28,6 +29,7 @@ type Overlay = null | "activity" | "conversation";
  * reads the same as a laptop.
  */
 export default function App() {
+  const { account } = useApp();
   const [tab, setTab] = useState<TabKey>("home");
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [story, setStory] = useState<Story | null>(null);
@@ -39,6 +41,10 @@ export default function App() {
   const openActivity = () => setOverlay("activity");
   const openMessages = () => go("chats");
   const openConversation = () => setOverlay("conversation");
+
+  // Signed out, the shell never mounts at all — no sidebar, no tab bar, and
+  // none of the feed state to leak between two people on the same device.
+  if (!account) return <Auth />;
 
   let screen: ReactNode;
   let screenKey: string;

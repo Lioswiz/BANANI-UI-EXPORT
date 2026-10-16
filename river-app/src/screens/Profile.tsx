@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { PostCard, Verified } from "../components/PostCard";
 import { PillButton } from "../components/primitives";
-import { BackIcon, SettingsIcon } from "../lib/icons";
+import {
+  BackIcon,
+  LogoutIcon,
+  PencilIcon,
+  SettingsIcon,
+  ShareIcon,
+} from "../lib/icons";
 import { profile, profilePost, tiles } from "../lib/data";
-import { actions, copy, toast, useApp } from "../lib/store";
+import { actions, copy, useApp } from "../lib/store";
 
 /**
  * Cover and avatar geometry is taken straight from the export: the cover is a
@@ -23,7 +29,26 @@ export function Profile({
   const { name, meta, bio } = useApp();
   const [tab, setTab] = useState(0);
   const [editing, setEditing] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [draft, setDraft] = useState({ name, meta, bio });
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // a popover has to close the ways people expect: a click anywhere else, or Esc
+  useEffect(() => {
+    if (!menu) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menu]);
 
   function startEditing() {
     setDraft({ name, meta, bio });
@@ -58,14 +83,54 @@ export function Profile({
         >
           <BackIcon size={20} />
         </button>
-        <button
-          type="button"
-          aria-label="Settings"
-          onClick={() => toast("Settings")}
-          className="absolute top-5 right-4 grid size-[36px] place-items-center rounded-full bg-surface/95 text-ink transition active:scale-95"
-        >
-          <SettingsIcon size={18} />
-        </button>
+        {/* Sign out lives up here beside the avatar rather than down in the
+            name row, and the gear beside it holds the two profile actions that
+            used to sit in that row as their own buttons. */}
+        <div ref={menuRef} className="absolute top-5 right-4 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={actions.signOut}
+            className="flex h-9 items-center gap-[6px] rounded-full bg-surface/95 px-[13px] text-[13px] font-bold text-ink transition active:scale-95"
+          >
+            <LogoutIcon size={16} />
+            Log out
+          </button>
+          <button
+            type="button"
+            aria-label="Settings"
+            aria-expanded={menu}
+            onClick={() => setMenu((m) => !m)}
+            className="grid size-[36px] place-items-center rounded-full bg-surface/95 text-ink transition active:scale-95"
+          >
+            <SettingsIcon size={18} />
+          </button>
+
+          {menu && (
+            <div className="absolute top-[44px] right-0 w-[196px] rounded-[16px] border border-hairline bg-surface p-1 shadow-[0_12px_32px_-10px_rgba(20,18,25,0.3)]">
+              <MenuRow
+                icon={<PencilIcon size={17} />}
+                onClick={() => {
+                  setMenu(false);
+                  startEditing();
+                }}
+              >
+                Edit profile
+              </MenuRow>
+              <MenuRow
+                icon={<ShareIcon size={17} />}
+                onClick={() => {
+                  setMenu(false);
+                  copy(
+                    `river.app/${profile.person.handle.replace("@", "")}`,
+                    "Profile link copied",
+                  );
+                }}
+              >
+                Share profile
+              </MenuRow>
+            </div>
+          )}
+        </div>
 
         {/* The export rings this photo in the brand gradient. The ring is gone,
             but the 74pt slot is kept so the photo holds its exact place
@@ -83,7 +148,9 @@ export function Profile({
       </div>
 
       <div className="px-4 pt-[44px]">
-        <div className="flex items-center gap-3">
+        {/* The export's 30pt row height is held even with the buttons gone, so
+            everything under the name keeps the place it had. */}
+        <div className="flex min-h-[30px] items-center gap-3">
           {editing ? (
             <input
               value={draft.name}
@@ -97,21 +164,23 @@ export function Profile({
               <Verified />
             </h1>
           )}
-          <div className="ml-auto flex items-center gap-2">
-            <PillButton
-              tone="ink"
-              className="!bg-surface !text-ink border border-hairline"
-              size="sm"
-              onClick={() =>
-                copy(`river.app/${profile.person.handle.replace("@", "")}`, "Profile link copied")
-              }
-            >
-              Share
-            </PillButton>
-            <PillButton tone="ink" size="sm" onClick={editing ? save : startEditing}>
-              {editing ? "Save" : "Edit"}
-            </PillButton>
-          </div>
+          {/* Share and Edit are gone from this row — both now live behind the
+              settings gear. Only Save and Cancel appear here, and only while
+              the profile is actually being edited. */}
+          {editing && (
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="h-[30px] shrink-0 rounded-full border border-hairline px-[13px] text-[13px] font-bold text-ink transition active:scale-95"
+              >
+                Cancel
+              </button>
+              <PillButton tone="ink" size="sm" onClick={save}>
+                Save
+              </PillButton>
+            </div>
+          )}
         </div>
 
         {editing ? (
@@ -201,5 +270,27 @@ export function Profile({
         </div>
       )}
     </>
+  );
+}
+
+/** One row of the settings popover. */
+function MenuRow({
+  icon,
+  onClick,
+  children,
+}: {
+  icon: ReactNode;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-[10px] rounded-[11px] px-3 py-[9px] text-left text-[14px] font-bold text-ink transition hover:bg-sunken active:bg-sunken"
+    >
+      <span className="text-muted">{icon}</span>
+      {children}
+    </button>
   );
 }
