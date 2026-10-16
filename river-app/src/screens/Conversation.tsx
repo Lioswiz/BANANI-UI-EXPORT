@@ -38,7 +38,7 @@ export function Conversation({ onBack }: { onBack: () => void }) {
 
   return (
     <>
-      <header className="flex items-center gap-3 border-b border-hairline px-4 pt-[18px] pb-3">
+      <header className="flex items-center gap-3 border-b border-hairline px-4 pt-[20px] pb-3">
         <button
           type="button"
           aria-label="Back"
@@ -77,14 +77,14 @@ export function Conversation({ onBack }: { onBack: () => void }) {
         </button>
       </header>
 
-      <div className="flex flex-col gap-3 px-4 pt-4 pb-2">
+      <div className="flex flex-col gap-3 px-4 pt-3 pb-2">
         <img
           src={shared.image}
           alt={shared.title}
           className="w-full rounded-[20px] object-cover"
         />
 
-        <p className="pb-1 text-center text-[12px] font-semibold text-muted">
+        <p className="text-center text-[12px] font-semibold text-muted">
           {conversation.dateDivider}
         </p>
 
@@ -149,14 +149,16 @@ function Bubble({
 }) {
   const mine = message.from === "me";
 
-  // a photo arrives as a white polaroid, not a bubble tinted by sender
+  // a photo arrives as a white polaroid, not a bubble tinted by sender.
+  // Measured off the export: the frame is 257x197pt with a 14pt border, so the
+  // photo inside it is 229x168.7 — right-aligned on the 16pt page margin.
   if (message.image) {
     return (
       <div className="flex justify-end">
         <img
           src={message.image}
           alt=""
-          className="w-[212px] rounded-[16px] bg-surface p-[14px] shadow-[0_2px_8px_rgba(20,18,25,0.10)]"
+          className="h-[197px] w-[257px] rounded-[16px] bg-surface object-cover p-[14px] shadow-[0_2px_8px_rgba(20,18,25,0.10)]"
         />
       </div>
     );

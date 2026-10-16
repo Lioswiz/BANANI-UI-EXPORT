@@ -6,7 +6,7 @@ import { CloseIcon } from "../lib/icons";
 /**
  * The export only shows the story rail, never an opened story, so this is an
  * extrapolation in the export's own language: full-bleed ink, the ring
- * gradient as the progress bar, and the same LIVE badge.
+ * gradient as the progress bar, and the same blinking live dot.
  */
 export function StoryViewer({ story, onClose }: { story: Story; onClose: () => void }) {
   useEffect(() => {
@@ -40,23 +40,24 @@ export function StoryViewer({ story, onClose }: { story: Story; onClose: () => v
       </div>
 
       <div className="flex items-center gap-3 px-4 pt-3">
-        <span
-          className={`rounded-full p-[2.5px] ${
-            story.variant === "you" ? "bg-white/25" : "ring-story"
-          }`}
-        >
-          <img
-            src={story.avatar}
-            alt=""
-            className="size-9 rounded-full border-2 border-ink object-cover"
-          />
+        <span className="relative block">
+          <span className="block overflow-hidden rounded-full">
+            <img
+              src={story.avatar}
+              alt=""
+              className={`size-[33px] rounded-full border-2 border-ink object-cover ${
+                story.variant === "you" ? "" : "wave-3d"
+              }`}
+            />
+          </span>
+          {story.variant === "live" && (
+            <span
+              aria-hidden
+              className="live-dot absolute top-[1px] right-[1px] size-[9px] rounded-full border-2 border-cream"
+            />
+          )}
         </span>
         <span className="text-[15px] font-extrabold text-white">{story.label}</span>
-        {story.variant === "live" && (
-          <span className="rounded-full bg-brand px-[9px] py-[4px] text-[10px] leading-none font-extrabold tracking-[0.02em] text-white">
-            LIVE
-          </span>
-        )}
         <span className="text-[13px] font-medium text-white/50">just now</span>
 
         <button

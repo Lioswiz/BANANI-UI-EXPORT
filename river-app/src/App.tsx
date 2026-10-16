@@ -5,6 +5,7 @@ import { Sidebar } from "./components/Sidebar";
 import { StoryViewer } from "./components/StoryViewer";
 import { TabBar, type TabKey } from "./components/TabBar";
 import { Toast } from "./components/Toast";
+import { WaveFilter } from "./components/WaveFilter";
 import { activity, type Story } from "./lib/data";
 import { actions } from "./lib/store";
 import { Activity } from "./screens/Activity";
@@ -76,6 +77,7 @@ export default function App() {
 
   return (
     <div className="relative flex h-dvh w-full overflow-hidden bg-cream">
+      <WaveFilter />
       <Sidebar
         active={overlay ? "home" : tab}
         onNavigate={go}

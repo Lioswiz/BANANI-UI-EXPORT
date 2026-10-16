@@ -75,7 +75,7 @@ export function Activity({
         {rows.map((item) => {
           const Glyph = GLYPHS[item.icon];
           return (
-            <div key={item.id} className="flex items-center gap-4 px-4 py-3.5">
+            <div key={item.id} className="flex items-center gap-4 px-4 py-3">
               <span
                 className={`grid size-10 shrink-0 place-items-center rounded-full ${TONES[item.tone]}`}
               >

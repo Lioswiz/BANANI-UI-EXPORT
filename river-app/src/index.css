@@ -25,8 +25,9 @@
   --color-zest: #dff34d; /* lime */
   --color-info: #0095f6; /* blue */
   --color-online: #34c759; /* presence green */
+  --color-live: #ff3b30; /* the live dot */
 
-  /* the live/reply ring gradient, orange -> pink -> violet, top to bottom */
+  /* the story progress bar's gradient, orange -> pink -> violet */
   --ring-story: linear-gradient(180deg, #a833c4 0%, #e1306c 52%, #f77737 100%);
 
   --radius-card: 1.5rem;
@@ -57,6 +58,45 @@
 
 @utility ring-story {
   background: var(--ring-story);
+}
+
+/* ---------------------------------------------------------------------------
+   The live marker. There is no status ring and no badge: a user who is live
+   gets one red bead on the corner of their photo, and the blink is the whole
+   signal. It reads at 12px because it is the only thing moving on the rail.
+--------------------------------------------------------------------------- */
+@keyframes dot-blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+@utility live-dot {
+  background: var(--color-live);
+  animation: dot-blink 1.6s ease-in-out infinite;
+}
+
+/* a blinking indicator is decoration, not information — the dot stays, it
+   just stops moving, so a reduced-motion reader still sees who is live */
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
+
+/* The wavy lens over a status photo — the filter is declared once in
+   components/WaveFilter.tsx and referenced here by id. The photo has to stay
+   inside its circle, so the wave is always paired with an `overflow-hidden`
+   round wrapper: the displacement ripples the picture instead of spilling it
+   past its edge. */
+@utility wave-3d {
+  filter: url("#river-wave");
 }
 
 /* toast rise-in, used by components/Toast.tsx */

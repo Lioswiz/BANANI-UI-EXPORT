@@ -67,12 +67,18 @@ export function Profile({
           <SettingsIcon size={18} />
         </button>
 
-        <div className="ring-story absolute top-[168.3px] left-4 size-[74px] rounded-full p-[5.5px]">
-          <img
-            src={profile.person.avatar}
-            alt={name}
-            className="size-full rounded-full object-cover"
-          />
+        {/* The export rings this photo in the brand gradient. The ring is gone,
+            but the 74pt slot is kept so the photo holds its exact place
+            straddling the cover edge — the details below still clear it with a
+            44pt top pad. */}
+        <div className="absolute top-[168.3px] left-4 grid size-[74px] place-items-center">
+          <span className="relative block size-[60px] overflow-hidden rounded-full">
+            <img
+              src={profile.person.avatar}
+              alt={name}
+              className="wave-3d size-full rounded-full object-cover"
+            />
+          </span>
         </div>
       </div>
 
