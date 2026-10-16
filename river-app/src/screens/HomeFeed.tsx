@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { AppHeader } from "../components/AppHeader";
 import { PostCard } from "../components/PostCard";
 import { PillButton } from "../components/primitives";
 import { StoryRail } from "../components/StoryRail";
 import { BoltIcon } from "../lib/icons";
-import { posts, stories } from "../lib/data";
+import { posts, stories, type Story } from "../lib/data";
+import { actions, useApp } from "../lib/store";
 
 export function HomeFeed({
   onActivity,
@@ -14,18 +15,34 @@ export function HomeFeed({
 }: {
   onActivity: () => void;
   onMessages: () => void;
-  onOpenStory: () => void;
+  onOpenStory: (story: Story) => void;
 }) {
-  const [feed, setFeed] = useState<"for-you" | "following">("for-you");
+  const { feed, following, composeToken } = useApp();
+  const [scope, setScope] = useState<"for-you" | "following">("for-you");
+  const [draft, setDraft] = useState("");
+  const composer = useRef<HTMLInputElement>(null);
+
+  // the tab bar's + and the sidebar's "New Chirp" both land the caret here
+  useEffect(() => {
+    if (composeToken > 0) composer.current?.focus();
+  }, [composeToken]);
+
+  const visible =
+    scope === "following"
+      ? posts.filter((p) => following[p.author.handle])
+      : posts;
+
+  function publish(e: FormEvent) {
+    e.preventDefault();
+    actions.publish(draft);
+    setDraft("");
+  }
 
   return (
     <>
       <AppHeader title="river" onActivity={onActivity} onMessages={onMessages} />
 
-      <StoryRail
-        stories={stories}
-        onOpen={() => onOpenStory()}
-      />
+      <StoryRail stories={stories} onOpen={onOpenStory} />
 
       {/* segmented feed switch: 44pt sunken track with a 36pt white thumb */}
       <div className="mx-4 mb-3 flex h-11 items-center rounded-full bg-sunken p-1">
@@ -38,9 +55,10 @@ export function HomeFeed({
           <button
             key={key}
             type="button"
-            onClick={() => setFeed(key)}
+            aria-pressed={scope === key}
+            onClick={() => setScope(key)}
             className={`h-9 flex-1 rounded-full text-[14px] transition ${
-              feed === key
+              scope === key
                 ? "bg-surface font-bold text-ink shadow-[0_1px_3px_rgba(20,18,25,0.08)]"
                 : "font-semibold text-muted"
             }`}
@@ -50,21 +68,48 @@ export function HomeFeed({
         ))}
       </div>
 
-      <div className="mx-4 mb-[11px] flex h-[66px] items-center gap-3 rounded-[20px] bg-ink px-3">
+      {/* The export's placeholder paragraph, made editable at the same metrics:
+          the input inherits the <p>'s 14px/1.4 semibold white so an empty
+          composer is pixel-identical to the mockup. */}
+      <form
+        onSubmit={publish}
+        className="mx-4 mb-[11px] flex h-[66px] items-center gap-3 rounded-[20px] bg-ink px-3"
+      >
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-zest text-ink">
           <BoltIcon size={17} />
         </span>
-        <p className="min-w-0 flex-1 text-[14px] leading-[1.4] font-semibold text-white">
-          Share a Chirp — text, photo or 30s Loop
-        </p>
-        <PillButton size="md" className="!px-[15px] !text-[13px]">
+        <input
+          ref={composer}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Share a Chirp — text, photo or 30s Loop"
+          aria-label="Share a Chirp"
+          className="min-w-0 flex-1 bg-transparent text-[14px] leading-[1.4] font-semibold text-white caret-zest outline-none placeholder:text-white"
+        />
+        <PillButton
+          size="md"
+          type="submit"
+          disabled={!draft.trim()}
+          className="!px-[15px] !text-[13px] disabled:opacity-45"
+        >
           Post
         </PillButton>
-      </div>
+      </form>
 
-      {posts.map((post) => (
+      {feed.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
+
+      {visible.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+
+      {scope === "following" && visible.length === 0 && (
+        <p className="mx-4 rounded-[22px] border border-dashed border-faint px-6 py-8 text-center text-[13px] leading-[1.5] font-medium text-muted">
+          You're not following anyone yet. Follow a few people and their Chirps
+          show up here.
+        </p>
+      )}
     </>
   );
 }

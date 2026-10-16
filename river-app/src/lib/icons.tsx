@@ -199,3 +199,19 @@ export const BoltIcon = (p: IconProps) => (
     <path d="M13.4 2.6 4.8 13.4h6L10 21.4l8.6-10.8h-6Z" />
   </Svg>
 );
+
+/* ----------------------------------------------------------- interaction */
+
+/** Used to dismiss the story and tile overlays. */
+export const CloseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8" />
+  </Svg>
+);
+
+/** Chevron for the wide-screen rails' "see all" links. */
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m9.5 5.5 6.5 6.5-6.5 6.5" />
+  </Svg>
+);

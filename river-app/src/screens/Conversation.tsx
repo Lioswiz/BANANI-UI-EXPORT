@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState, type FormEvent } from "react";
+
 import { Avatar, SearchField } from "../components/primitives";
 import {
   BackIcon,
@@ -8,6 +10,7 @@ import {
   VideoIcon,
 } from "../lib/icons";
 import { conversation, type Message } from "../lib/data";
+import { actions, toast, useApp } from "../lib/store";
 
 /**
  * Geometry from the export: the shared-Loop card is full-bleed at 343x192.7pt
@@ -17,6 +20,21 @@ import { conversation, type Message } from "../lib/data";
  */
 export function Conversation({ onBack }: { onBack: () => void }) {
   const { with: person, shared } = conversation;
+  const { messages } = useApp();
+  const [draft, setDraft] = useState("");
+  const end = useRef<HTMLDivElement>(null);
+
+  // keep the newest bubble in view once the thread outgrows the screen
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" });
+  }, [messages.length]);
+
+  function send(e: FormEvent) {
+    e.preventDefault();
+    if (!draft.trim()) return;
+    actions.sendMessage(draft);
+    setDraft("");
+  }
 
   return (
     <>
@@ -44,6 +62,7 @@ export function Conversation({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           aria-label="Voice call"
+          onClick={() => toast(`Calling ${person.name}…`)}
           className="grid size-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-surface transition active:scale-95"
         >
           <PhoneIcon size={17} />
@@ -51,6 +70,7 @@ export function Conversation({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           aria-label="Video call"
+          onClick={() => toast(`Starting video with ${person.name}…`)}
           className="grid size-[34px] shrink-0 place-items-center rounded-full border border-hairline bg-surface transition active:scale-95"
         >
           <VideoIcon size={17} />
@@ -68,30 +88,52 @@ export function Conversation({ onBack }: { onBack: () => void }) {
           {conversation.dateDivider}
         </p>
 
-        {conversation.messages.map((m) => (
+        {messages.map((m) => (
           <Bubble key={m.id} message={m} avatar={person.avatar} name={person.name} />
         ))}
+
+        <div ref={end} />
       </div>
 
-      <div className="sticky bottom-0 flex items-center gap-[10px] border-t border-hairline bg-cream px-4 py-3">
+      <form
+        onSubmit={send}
+        className="sticky bottom-0 flex items-center gap-[10px] border-t border-hairline bg-cream px-4 py-3"
+      >
         <SearchField
-          placeholder="Message Juno..."
+          placeholder={`Message ${person.name}...`}
+          value={draft}
+          onChange={setDraft}
           className="flex-1"
           trailing={
             <div className="flex shrink-0 items-center gap-[10px] text-ink">
-              <ImageIcon size={21} />
-              <MicIcon size={21} />
+              <button
+                type="button"
+                aria-label="Attach a photo"
+                onClick={() => toast("Attach a photo")}
+                className="transition active:scale-90"
+              >
+                <ImageIcon size={21} />
+              </button>
+              <button
+                type="button"
+                aria-label="Record a voice note"
+                onClick={() => toast("Hold to record a voice note")}
+                className="transition active:scale-90"
+              >
+                <MicIcon size={21} />
+              </button>
             </div>
           }
         />
         <button
-          type="button"
+          type="submit"
           aria-label="Send"
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white transition active:scale-95"
+          disabled={!draft.trim()}
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-white transition active:scale-95 disabled:opacity-45 disabled:active:scale-100"
         >
           <SendIcon size={19} />
         </button>
-      </div>
+      </form>
     </>
   );
 }

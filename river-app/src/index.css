@@ -58,3 +58,25 @@
 @utility ring-story {
   background: var(--ring-story);
 }
+
+/* toast rise-in, used by components/Toast.tsx */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-toast {
+  animation: toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-toast {
+    animation: none;
+  }
+}

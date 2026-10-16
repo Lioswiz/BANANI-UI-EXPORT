@@ -12,6 +12,15 @@ import {
 } from "../components/primitives";
 import { CameraIcon, MegaphoneIcon } from "../lib/icons";
 import { channels, chatFilters, chatRows } from "../lib/data";
+import { actions, useApp } from "../lib/store";
+
+/** Which rows each export filter chip keeps. */
+const ROW_FILTERS: Record<string, (tag?: string, unread?: number) => boolean> = {
+  All: () => true,
+  Unread: (_tag, unread) => !!unread,
+  Groups: (tag) => tag === "Group",
+  Channels: (tag) => tag === "Channel",
+};
 
 export function Chats({
   onActivity,
@@ -22,14 +31,31 @@ export function Chats({
   onMessages: () => void;
   onOpenConversation: () => void;
 }) {
+  const { joined } = useApp();
   const [filter, setFilter] = useState(chatFilters[0]);
+  const [query, setQuery] = useState("");
+
+  const q = query.trim().toLowerCase();
+  const rows = chatRows
+    .filter((row) => ROW_FILTERS[filter]?.(row.tag, row.unread) ?? true)
+    .filter(
+      (row) =>
+        !q ||
+        row.person.name.toLowerCase().includes(q) ||
+        row.person.handle.toLowerCase().includes(q) ||
+        row.preview.toLowerCase().includes(q),
+    );
 
   return (
     <>
       <AppHeader title="chats" onActivity={onActivity} onMessages={onMessages} />
 
       <div className="px-4">
-        <SearchField placeholder="Search chats, channels, people" />
+        <SearchField
+          placeholder="Search chats, channels, people"
+          value={query}
+          onChange={setQuery}
+        />
       </div>
 
       <Rail className="px-4 pt-[17px] pb-1">
@@ -67,17 +93,23 @@ export function Chats({
                 {channel.members}
               </p>
             </div>
-            <PillButton size="sm">Join</PillButton>
+            <PillButton
+              size="sm"
+              tone={joined[channel.id] ? "ink" : "brand"}
+              onClick={() => actions.toggleJoin(channel.id)}
+            >
+              {joined[channel.id] ? "Joined" : "Join"}
+            </PillButton>
           </div>
         ))}
       </div>
 
-      <div className="px-4 pt-5">
+      <div className="px-4 pt-[27px]">
         <SectionHeading>Messages</SectionHeading>
       </div>
 
       <div className="flex flex-col px-4">
-        {chatRows.map((row) => (
+        {rows.map((row) => (
           <button
             key={row.id}
             type="button"

@@ -69,12 +69,16 @@ export function PillButton({
   children,
   tone = "brand",
   size = "md",
+  type = "button",
+  disabled,
   onClick,
   className = "",
 }: {
   children: ReactNode;
   tone?: "brand" | "ink" | "zest";
   size?: "sm" | "md";
+  type?: "button" | "submit";
+  disabled?: boolean;
   onClick?: () => void;
   className?: string;
 }) {
@@ -89,9 +93,10 @@ export function PillButton({
   };
   return (
     <button
-      type="button"
+      type={type}
+      disabled={disabled}
       onClick={onClick}
-      className={`shrink-0 rounded-full font-bold transition active:scale-95 ${tones[tone]} ${sizes[size]} ${className}`}
+      className={`shrink-0 rounded-full font-bold transition active:scale-95 disabled:active:scale-100 ${tones[tone]} ${sizes[size]} ${className}`}
     >
       {children}
     </button>

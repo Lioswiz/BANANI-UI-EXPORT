@@ -33,7 +33,7 @@ export function TabBar({
   const right = TABS.slice(2);
 
   return (
-    <nav className="relative shrink-0 border-t border-hairline bg-cream">
+    <nav className="relative shrink-0 border-t border-hairline bg-cream lg:hidden">
       <div className="flex items-center justify-between px-6 pt-3 pb-5">
         {left.map((t) => (
           <TabButton key={t.key} tab={t} active={active === t.key} onChange={onChange} />
